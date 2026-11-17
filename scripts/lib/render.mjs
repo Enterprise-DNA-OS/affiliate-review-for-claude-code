@@ -40,7 +40,9 @@ function fmt(v, key, row) {
   if (key.endsWith('_bps')) return `${(Number(v) / 100).toFixed(2)}%`;
   // Thousands separators; a *_base_cents column is already in the group's base currency, so it takes no row currency.
   if (key.endsWith('_cents')) {
-    const amount = (Number(v) / 100).toLocaleString('en-NZ', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const cents = BigInt(String(v));
+    const magnitude = cents < 0n ? -cents : cents;
+    const amount = `${cents < 0n ? '-' : ''}${(magnitude / 100n).toLocaleString('en-NZ')}.${String(magnitude % 100n).padStart(2, '0')}`;
     return key.endsWith('_base_cents') ? amount : `${row.currency || ''} ${amount}`.trim();
   }
   if (typeof v === 'object') return JSON.stringify(v);

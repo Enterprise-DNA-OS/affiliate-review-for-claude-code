@@ -1,11 +1,54 @@
 [
   {
-    "name": "example",
-    "title": "TODO(author): the first document this industry must produce",
-    "for_each": "select gen_random_uuid() as id, 'Example' as name",
+    "name": "partner-statement",
+    "title": "Partner review statement",
+    "for_each": "select id,name from partners order by name",
     "file": "name",
     "sections": [
-      { "title": "Details", "sql": "select 'replace me' as item, $1::text as record_id" }
+      {
+        "title": "Partner record",
+        "layout": "record",
+        "sql": "select name,owner,agreement_ref,review_on from partners where id=$1"
+      },
+      {
+        "title": "Reviewed amounts by currency",
+        "note": "Working record only. Excludes open disputes and unreviewed conversions. Confirm terms and merchant records before any payment.",
+        "sql": "select currency,conversions,pending,approved_payout_cents,approved_margin_cents,pending_payout_cents from partner_balances where partner_id=$1 order by currency"
+      },
+      {
+        "title": "Conversion detail",
+        "sql": "select source_event_id,offer,source_status,decision,disputed,currency,revenue_cents,payout_cents from conversion_review where partner_id=$1 order by source_event_id"
+      }
+    ]
+  },
+  {
+    "name": "decision-record",
+    "title": "Conversion decision record",
+    "for_each": "select id,source_event_id name from conversions order by source_event_id",
+    "file": "name",
+    "sections": [
+      {
+        "title": "Source and decision",
+        "layout": "record",
+        "sql": "select source_event_id,transaction_id,partner,offer,occurred_at,source_status,decision,currency,revenue_cents,payout_cents,source_ref from conversion_review where id=$1"
+      },
+      {
+        "title": "Decision history",
+        "sql": "select decision,operator,reason,evidence_ref,created_at from decisions where conversion_id=$1 order by created_at,id"
+      }
+    ]
+  },
+  {
+    "name": "disclosure-register",
+    "title": "Partner disclosure evidence register",
+    "for_each": "select id,name from partners order by name",
+    "file": "name",
+    "sections": [
+      {
+        "title": "Recorded inspections",
+        "note": "A recorded clear outcome is a human assessment, not legal certification. Earlier inspections are retained.",
+        "sql": "select placement,market,outcome,evidence_ref,checked_on,review_on from disclosures where partner_id=$1 order by checked_on desc,created_at desc"
+      }
     ]
   }
 ]

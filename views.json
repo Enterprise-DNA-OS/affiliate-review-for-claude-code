@@ -1,13 +1,41 @@
 [
   {
     "name": "week",
-    "title": "This week",
-    "subtitle": "Affiliate Review for Claude Code: what needs attention, rendered by npm run view",
+    "title": "Affiliate review this week",
+    "subtitle": "Private working copy. Decisions stay with the operator.",
     "sections": [
       {
-        "title": "Needs attention",
-        "note": "TODO(author): point this at the industry's attention view (overdue, stuck, quiet).",
-        "sql": "select 'replace me' as item, 'TODO(author)' as why"
+        "title": "Due for attention",
+        "sql": "select * from attention order by due_on nulls first,reference"
+      },
+      {
+        "title": "Pending decisions",
+        "sql": "select source_event_id,partner,offer,currency,payout_cents,overdue_days from conversion_review where decision='pending' order by due_on,source_event_id"
+      }
+    ]
+  },
+  {
+    "name": "partners",
+    "title": "Partner amounts by currency",
+    "subtitle": "Recorded amounts only. No payment instructions.",
+    "sections": [
+      {
+        "title": "Reviewed and pending amounts",
+        "sql": "select partner,currency,conversions,pending,approved_payout_cents,approved_margin_cents,pending_payout_cents from partner_balances order by partner,currency"
+      }
+    ]
+  },
+  {
+    "name": "evidence",
+    "title": "Disclosure and dispute review",
+    "sections": [
+      {
+        "title": "Disclosure evidence to review",
+        "sql": "select partner,placement,market,outcome,review_on from disclosure_review order by partner,placement"
+      },
+      {
+        "title": "Open disputes",
+        "sql": "select c.source_event_id,d.reason,d.owner,d.due_on from disputes d join conversions c on c.id=d.conversion_id where d.status='open' order by due_on"
       }
     ]
   }
